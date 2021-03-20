@@ -18,7 +18,7 @@ void log(const char* format, ...)
     va_start(args, format);
     vprintf(format, args);
     fflush(stdout);
-    if (fLog != NULL)
+    if (fLog != NULL && fLog != INVALID_HANDLE_VALUE)
     {
         vfprintf(fLog, format, args);
         fflush(fLog);
@@ -31,6 +31,13 @@ LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
     log("[Crashed!]\n");
     HANDLE hProcess = GetCurrentProcess();
     HANDLE hThread = GetCurrentThread();
+    CreateDirectory(L"logs", NULL);
+    errno_t res = fopen_s(&fLog, LOG_OUTPUT_PATH, "w");
+    if (res != 0)
+    {
+        fLog = NULL;
+        log("[Warning] Fail to open log file! Error Code:%d\n",res);
+    }
 
     /// <summary>
     /// StackWalk
@@ -93,7 +100,6 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     {
     case DLL_PROCESS_ATTACH:
         SystemHandler = SetUnhandledExceptionFilter(CrashLogger);
-        fopen_s(&fLog, LOG_OUTPUT_PATH, "w");
         printf("[CrashLogger] CrashLogger loaded.\n");
         break;
     case DLL_THREAD_ATTACH:
@@ -101,7 +107,8 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     case DLL_THREAD_DETACH:
         break;
     case DLL_PROCESS_DETACH:
-        fclose(fLog);
+        if (fLog != NULL && fLog != INVALID_HANDLE_VALUE)
+            fclose(fLog);
         break;
     }
     return TRUE;
