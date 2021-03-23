@@ -9,4 +9,5 @@ Support me at https://www.minebbs.com/resources/crashlogger.2287/
 - Dumpbin database will generate at file .\logs\CrashDump.dmp
 
 Stack walk can give you a general view of possible problems.
+
 Using CrashDump, WinDbg and .pdb files, you can get more infomation about the crash.
