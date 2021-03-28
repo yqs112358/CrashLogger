@@ -4,6 +4,7 @@
 #include <cstddef>
 #include <cstdarg>
 #include <cstring>
+#include <ctime>
 
 #define MAX_STACK_FRAMES 50
 #define LOG_OUTPUT_PATH ".\\logs\\TrackBack.log"
@@ -11,6 +12,7 @@
 
 PTOP_LEVEL_EXCEPTION_FILTER SystemHandler;
 FILE* fLog;
+bool inSEH = true;
 
 void log(const char* format, ...)
 {
@@ -18,7 +20,7 @@ void log(const char* format, ...)
     va_start(args, format);
     vprintf(format, args);
     fflush(stdout);
-    if (fLog != NULL && fLog != INVALID_HANDLE_VALUE)
+    if (fLog > 0)
     {
         vfprintf(fLog, format, args);
         fflush(fLog);
@@ -28,22 +30,26 @@ void log(const char* format, ...)
 
 LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
 {
-    log("[Crashed!]\n");
     HANDLE hProcess = GetCurrentProcess();
     HANDLE hThread = GetCurrentThread();
     CreateDirectory(L"logs", NULL);
-    errno_t res = fopen_s(&fLog, LOG_OUTPUT_PATH, "w");
+    errno_t res = fopen_s(&fLog, LOG_OUTPUT_PATH, "a");
     if (res != 0)
     {
         fLog = NULL;
-        log("[Warning] Fail to open log file! Error Code:%d\n",res);
+        log("[CrashLogger][Warning] Fail to open log file! Error Code:%d\n",res);
     }
 
-    /// <summary>
-    /// StackWalk
-    /// </summary>
-    /// <param name="pe"></param>
-    /// <returns></returns>
+    time_t rawTime;
+    time(&rawTime);
+    struct tm* info = { 0 };
+    char timeStr[32] = { 0 };
+    if(localtime_s(info,&rawTime) == 0)
+        strftime(timeStr, 32, "%Y-%m-%d %H:%M:%S", info);
+    log("[Crashed!] at %s\n",timeStr);
+
+    ////////// StackWalk //////////
+
     SymInitialize(hProcess, NULL, TRUE);
     void* pStack[MAX_STACK_FRAMES];
     WORD frames = CaptureStackBackTrace(0, MAX_STACK_FRAMES, pStack, NULL);
@@ -63,19 +69,25 @@ LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
 
         //Function
         if (SymFromAddr(hProcess, address, &displacementSym, pSymbol))
-            if(strcmp(pSymbol->Name,"UnhandledExceptionFilter") != 0)
+        {
+            if (strcmp(pSymbol->Name, "KiUserExceptionDispatcher") == 0)
+            {
+                inSEH = false;
+                continue;
+            }
+            if(!inSEH)
                 log("[TrackBack] Function %s at (0x%llX)\n", pSymbol->Name, pSymbol->Address);
+        }
+        else
+            log("[TrackBack] Function ???????? at (0x????????)\n");
         //Line
-        if (SymGetLineFromAddr64(hProcess, address, &displacementLine, &line)) 
+        if (!inSEH && SymGetLineFromAddr64(hProcess, address, &displacementLine, &line))
             log("[TrackBack] At File %s : Line %d \n", line.FileName, line.LineNumber);
     }
     SymCleanup(hProcess);
+    log("\n\n");
 
-    /// <summary>
-    /// CrashDump
-    /// </summary>
-    /// <param name="pe"></param>
-    /// <returns></returns>
+    ////////// CrashDump //////////
     HANDLE hDumpFile = CreateFile(DUMP_OUTPUT_PATH, GENERIC_WRITE, 0, NULL, 
         CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (hDumpFile != INVALID_HANDLE_VALUE)
