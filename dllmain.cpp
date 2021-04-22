@@ -1,6 +1,8 @@
 ﻿#include "pch.h"
 #include <dbghelp.h>
 #include <cstdio>
+#include <cstdlib>
+#include <crtdbg.h>
 #include <cstddef>
 #include <cstdarg>
 #include <cstring>
@@ -10,7 +12,6 @@
 #define LOG_OUTPUT_PATH ".\\logs\\TrackBack.log"
 #define DUMP_OUTPUT_PATH L".\\logs\\CrashDump.dmp"
 
-PTOP_LEVEL_EXCEPTION_FILTER SystemHandler;
 FILE* fLog;
 bool inSEH = true;
 
@@ -28,8 +29,21 @@ void log(const char* format, ...)
     va_end(args);
 }
 
+void CrtInvalidParameterHandler(const wchar_t* expression,const wchar_t* function,
+    const wchar_t* file, unsigned int line, uintptr_t pReserved)
+{
+    //log("[CrashLogger] CRT catch exception.\n");
+    throw 1;
+}
+void CrtPurecallHandler(void)
+{
+    //log("[CrashLogger] CRT catch exception.\n");
+    throw 1;
+}
+
 LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
 {
+    //log("[CrashLogger] SEH catch exception.\n");
     HANDLE hProcess = GetCurrentProcess();
     HANDLE hThread = GetCurrentThread();
     CreateDirectory(L"logs", NULL);
@@ -39,17 +53,9 @@ LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
         fLog = NULL;
         log("[CrashLogger][Warning] Fail to open log file! Error Code:%d\n",res);
     }
-
-    time_t rawTime;
-    time(&rawTime);
-    struct tm* info = { 0 };
-    char timeStr[32] = { 0 };
-    if(localtime_s(info,&rawTime) == 0)
-        strftime(timeStr, 32, "%Y-%m-%d %H:%M:%S", info);
-    log("[Crashed!] at %s\n",timeStr);
+    log("\n[Crashed!]\n");
 
     ////////// StackWalk //////////
-
     SymInitialize(hProcess, NULL, TRUE);
     void* pStack[MAX_STACK_FRAMES];
     WORD frames = CaptureStackBackTrace(0, MAX_STACK_FRAMES, pStack, NULL);
@@ -85,7 +91,7 @@ LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
             log("[TrackBack] At File %s : Line %d \n", line.FileName, line.LineNumber);
     }
     SymCleanup(hProcess);
-    log("\n\n");
+    log("\n");
 
     ////////// CrashDump //////////
     HANDLE hDumpFile = CreateFile(DUMP_OUTPUT_PATH, GENERIC_WRITE, 0, NULL, 
@@ -100,7 +106,7 @@ LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
             &dumpInfo, NULL, NULL);
     }
 
-    return SystemHandler(pe);
+    return EXCEPTION_CONTINUE_SEARCH;
 }
 
 BOOL APIENTRY DllMain( HMODULE hModule,
@@ -111,7 +117,12 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        SystemHandler = SetUnhandledExceptionFilter(CrashLogger);
+        //SEH
+        SetUnhandledExceptionFilter(CrashLogger);
+        //CRT
+        _set_invalid_parameter_handler(CrtInvalidParameterHandler);
+        _set_purecall_handler(CrtPurecallHandler);
+
         printf("[CrashLogger] CrashLogger loaded.\n");
         break;
     case DLL_THREAD_ATTACH:
