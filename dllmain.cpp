@@ -57,7 +57,7 @@ LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
 {
     HANDLE hProcess = GetCurrentProcess();
     ReadModuleName(pe->ExceptionRecord->ExceptionAddress);
-    log("\n[Crashed!] From module <%s>\n", moduleName);
+    log("\n[Crashed!] Exception in -> %s\n", moduleName);
 
 
     ////////// CrashDump //////////
@@ -101,7 +101,8 @@ LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
             if (!inSEH)
             {
                 ReadModuleName((void*)(uintptr_t)(pSymbol->Address));
-                log("[TrackBack] Function %s at (0x%llX) [%s]\n", pSymbol->Name, pSymbol->Address, moduleName);
+                log("[TrackBack] Function %s at (0x%llX)\n", pSymbol->Name, pSymbol->Address);
+                log("[TrackBack] In module [%s]\n", moduleName);
             }
         }
         else
