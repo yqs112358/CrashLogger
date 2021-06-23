@@ -57,8 +57,8 @@ LONG WINAPI CrashLogger(PEXCEPTION_POINTERS pe)
 {
     HANDLE hProcess = GetCurrentProcess();
     ReadModuleName(pe->ExceptionRecord->ExceptionAddress);
-    log("\n[Crashed!] Exception in -> %s\n", moduleName);
-
+    log("\n[Crashed!]\n");
+    log("[CrashLogger] Unhandled Exception in -> %s\n", moduleName);
 
     ////////// CrashDump //////////
     if (hDumpFile != INVALID_HANDLE_VALUE)
