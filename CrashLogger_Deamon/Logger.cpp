@@ -1,5 +1,4 @@
 #include <windows.h>
-#include <dbghelp.h>
 #include <cstdio>
 #include <string>
 #include <filesystem>
@@ -94,15 +93,15 @@ void TrackBack(PEXCEPTION_POINTERS e)
 		PSYMBOL_INFO info;
 		if (info = GetSymbolInfo(hProcess, (void*)stackFrame.AddrPC.Offset))
 		{
-			log("[TrackBack] Function %s at 0x%llX  [%ls]\n", info->Name, info->Address, MapModuleFromAddr(hProcess, (void*)address).c_str());
+			log("[TrackBack] Function %ls at 0x%llX  [%ls]\n", info->Name, info->Address, MapModuleFromAddr(hProcess, (void*)address).c_str());
 
 			//Line
 			DWORD displacement = 0;
 			IMAGEHLP_LINE64 line;
 			line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
 
-			if (SymGetLineFromAddr64(hProcess, address, &displacement, &line))
-				log("-- At File %s : Line %d \n", line.FileName, line.LineNumber);
+			if (SymGetLineFromAddrW64(hProcess, address, &displacement, &line))
+				log("-- At File %ls : Line %d \n", line.FileName, line.LineNumber);
 		}
 		else
 			log("[TrackBack] Function ???????? at 0x????????\n");
