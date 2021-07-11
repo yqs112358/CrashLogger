@@ -37,6 +37,11 @@ BOOL APIENTRY DllMain( HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
+        if (IsDebuggerPresent())
+        {
+            printf("[CrashLogger][Warning] Existing debugger detected. CrashLogger will not work.\n");
+            return TRUE;
+        }
         if (!InitDeamonProcess())
             return FALSE;
         printf("[CrashLogger] CrashLogger loaded.\n");
