@@ -1,9 +1,10 @@
 ﻿#include "pch.h"
+#include <string>
 #include <cstdio>
 #include <cstring>
 #include "../include/LoggerShareData.h"
 
-bool InitDeamonProcess()
+bool InitDaemonProcess()
 {
     STARTUPINFO si;
     ZeroMemory(&si, sizeof(si));
@@ -15,12 +16,12 @@ bool InitDeamonProcess()
     sa.lpSecurityDescriptor = NULL;
     sa.nLength = sizeof(SECURITY_ATTRIBUTES);
 
-    wchar_t deamonPath[MAX_PATH];
+    wchar_t daemonPath[MAX_PATH];
     
-    wsprintf(deamonPath, L"%ls %u", DEAMON_PROCESS_PATH, GetCurrentProcessId());
-    if (!CreateProcess(NULL, deamonPath, &sa, &sa, TRUE, 0, NULL, NULL, &si, &pi))
+    wsprintf(daemonPath, L"%ls %u", DAEMON_PROCESS_PATH, GetCurrentProcessId());
+    if (!CreateProcess(NULL, daemonPath, &sa, &sa, TRUE, 0, NULL, NULL, &si, &pi))
     {
-        printf("[CrashLogger][ERROR] Could not Create Deamon Process! Error Code: %d\n", GetLastError());
+        printf("[CrashLogger][ERROR] Could not Create Daemon Process! Error Code: %d\n", GetLastError());
         return false;
     }
     
@@ -42,7 +43,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
             printf("[CrashLogger][Warning] Existing debugger detected. CrashLogger will not work.\n");
             return TRUE;
         }
-        if (!InitDeamonProcess())
+        if (!InitDaemonProcess())
             return FALSE;
         printf("[CrashLogger] CrashLogger loaded.\n");
         break;

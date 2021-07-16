@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30907.101
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrashLogger", "CrashLogger\CrashLogger.vcxproj", "{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrashLogger_Deamon", "CrashLogger_Deamon\CrashLogger_Deamon.vcxproj", "{336BD48D-37CD-41CC-BC61-F5090AF162BE}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrashLogger_Daemon", "CrashLogger_Daemon\CrashLogger_Daemon.vcxproj", "{336BD48D-37CD-41CC-BC61-F5090AF162BE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

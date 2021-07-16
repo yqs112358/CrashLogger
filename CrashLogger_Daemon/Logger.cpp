@@ -9,8 +9,10 @@
 
 using namespace std;
 
-extern HANDLE hProcess;
-extern HANDLE hThread;
+HANDLE hProcess;
+HANDLE hThread;
+DWORD dProcessId;
+DWORD dThreadId;
 FILE* fLog;
 HANDLE hDumpFile;
 
@@ -39,7 +41,7 @@ bool CreateLogFiles()
 	string dateTimeStr = GetDateTime();
 
 	string dumpPath = DUMP_OUTPUT_PATH + dateTimeStr + ".dmp";
-	HANDLE hDumpFile = CreateFileA(dumpPath.c_str(), GENERIC_WRITE, 0, NULL,
+	hDumpFile = CreateFileA(dumpPath.c_str(), GENERIC_WRITE, 0, NULL,
 		CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 	if (hDumpFile == INVALID_HANDLE_VALUE || hDumpFile == NULL)
 	{
@@ -62,10 +64,13 @@ void CoreDump(PEXCEPTION_POINTERS e)
 	if (hDumpFile != INVALID_HANDLE_VALUE)
 	{
 		MINIDUMP_EXCEPTION_INFORMATION dumpInfo;
+		memset(&dumpInfo, 0, sizeof(MINIDUMP_EXCEPTION_INFORMATION));
+
 		dumpInfo.ExceptionPointers = e;
-		dumpInfo.ThreadId = GetThreadId(hThread);
+		dumpInfo.ThreadId = dThreadId;
 		dumpInfo.ClientPointers = FALSE;
-		if (!MiniDumpWriteDump(hProcess, GetProcessId(hProcess), hDumpFile, MiniDumpNormal, &dumpInfo, NULL, NULL))
+		
+		if (!MiniDumpWriteDump(hProcess, dProcessId, hDumpFile, MiniDumpNormal, &dumpInfo, NULL, NULL))
 		{
 			log("[CrashLogger][ERROR] Fail to Generate Minidump! Error Code: %u\n", GetLastError());
 		}
@@ -108,8 +113,13 @@ void TrackBack(PEXCEPTION_POINTERS e)
 	}
 }
 
-void LogCrash(PEXCEPTION_POINTERS e)
+void LogCrash(PEXCEPTION_POINTERS e, HANDLE hPro, HANDLE hThr, DWORD dProId, DWORD dThrId)
 {
+	hProcess = hPro;
+	hThread = hThr;
+	dProcessId = dProId;
+	dThreadId = dThrId;
+
 	if (!CreateLogFiles() || !CreateModuleMap(hProcess))
 		return;
 
@@ -118,7 +128,7 @@ void LogCrash(PEXCEPTION_POINTERS e)
 	log("-- Unhandled Exception in -> %ls\n", MapModuleFromAddr(hProcess, e->ExceptionRecord->ExceptionAddress).c_str());
 	log("-- Exception Code: %u\n", e->ExceptionRecord->ExceptionCode);
 	if(e->ExceptionRecord->ExceptionCode == CRT_EXCEPTION_CODE)
-		log("-- C++ STL Exception detected! CrashLogger may not give correct information about this exception.\n")
+		log("-- C++ STL Exception detected!\n")
 
 	CoreDump(e);
 	CloseHandle(hDumpFile);

@@ -8,8 +8,7 @@
 
 using namespace std;
 
-HANDLE hProcess;
-HANDLE hThread;
+HANDLE hProcess_Debug;
 bool waitEvent = true;
 DEBUG_EVENT debugEvent;
 
@@ -44,7 +43,7 @@ bool LoadSymbolFiles()
 	FindSymbols(symbolPath,".",false);
 	FindSymbols(symbolPath,".\\plugins", true);
 
-	if (!SymInitializeW(hProcess, symbolPath.c_str(), TRUE))
+	if (!SymInitializeW(hProcess_Debug, symbolPath.c_str(), TRUE))
 	{
 		printf("[CrashLogger][ERROR] Fail to load Symbol Files! Error Code: %d\n", GetLastError());
 		return false;
@@ -54,7 +53,7 @@ bool LoadSymbolFiles()
 
 bool InitDebugger()
 {
-	if (!DebugActiveProcess(GetProcessId(hProcess)))
+	if (!DebugActiveProcess(GetProcessId(hProcess_Debug)))
 	{
 		printf("[CrashLogger][ERROR] Fail to attach Debugger! Error Code: %d\n", GetLastError());
 		return false;
@@ -76,17 +75,17 @@ DWORD inline OnThreadCreated(const CREATE_THREAD_DEBUG_INFO* e)
 }
 DWORD inline OnDllLoaded(const LOAD_DLL_DEBUG_INFO* e)
 {
-	SymLoadModule64(hProcess, e->hFile, NULL, NULL , (DWORD64)(e->lpBaseOfDll), 0);
+	SymLoadModule64(hProcess_Debug, e->hFile, NULL, NULL , (DWORD64)(e->lpBaseOfDll), 0);
 	return DBG_CONTINUE;
 }
 DWORD inline OnDllUnloaded(const UNLOAD_DLL_DEBUG_INFO* e)
 {
-	SymUnloadModule64(hProcess, (DWORD64)(e->lpBaseOfDll));
+	SymUnloadModule64(hProcess_Debug, (DWORD64)(e->lpBaseOfDll));
 	return DBG_CONTINUE;
 }
 
-extern void LogCrash(PEXCEPTION_POINTERS e);
-DWORD OnException(const EXCEPTION_DEBUG_INFO* e, DWORD threadId)
+extern void LogCrash(PEXCEPTION_POINTERS e, HANDLE hPro, HANDLE hThr, DWORD dProId, DWORD dThrId);
+DWORD OnException(const EXCEPTION_DEBUG_INFO* e, DWORD processId, DWORD threadId)
 {
 	if (e->dwFirstChance)
 		return DBG_EXCEPTION_NOT_HANDLED;
@@ -94,28 +93,33 @@ DWORD OnException(const EXCEPTION_DEBUG_INFO* e, DWORD threadId)
 	EXCEPTION_POINTERS exception = { 0 };
 	CONTEXT context;
 	
-	hThread = OpenThread(THREAD_ALL_ACCESS, TRUE, threadId);
+	HANDLE hThread = OpenThread(THREAD_ALL_ACCESS, TRUE, threadId);
 	if (hThread == NULL)
 	{
 		printf("[CrashLogger][ERROR] Fail to Open Thread! Error Code: %d\n", GetLastError());
 		return DBG_EXCEPTION_NOT_HANDLED;
 	}
 	context.ContextFlags = CONTEXT_FULL;
-	GetThreadContext(hThread, &context);
+	if (!GetThreadContext(hThread, &context))
+	{
+		printf("[CrashLogger][ERROR] Fail to Get Context! Error Code: %d\n", GetLastError());
+		return DBG_EXCEPTION_NOT_HANDLED;
+	}
 
 	exception.ContextRecord = &context;
 	exception.ExceptionRecord = (PEXCEPTION_RECORD)&(e->ExceptionRecord);
 
-	LogCrash(&exception);
+	LogCrash(&exception, hProcess_Debug, hThread, processId, threadId);
 	//Do other operations
 
-	SymCleanup(hProcess);
+	SymCleanup(hProcess_Debug);
 	Sleep(SLEEP_BEFORE_ABORT * 1000);
 	return DBG_EXCEPTION_NOT_HANDLED;
 }
 
-void DebuggerMain()
+void DebuggerMain(HANDLE hPro)
 {
+	hProcess_Debug = hPro;
 	if (!InitDebugger() || !LoadSymbolFiles())
 		return;
 
@@ -131,7 +135,7 @@ void DebuggerMain()
 			continueStatus = OnThreadCreated(&debugEvent.u.CreateThread);
 			break;
 		case EXCEPTION_DEBUG_EVENT:
-			continueStatus = OnException(&debugEvent.u.Exception, debugEvent.dwThreadId);
+			continueStatus = OnException(&debugEvent.u.Exception, debugEvent.dwProcessId, debugEvent.dwThreadId);
 			break;
 		case EXIT_PROCESS_DEBUG_EVENT:
 			waitEvent = false;
