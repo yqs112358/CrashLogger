@@ -126,13 +126,14 @@ void LogCrash(PEXCEPTION_POINTERS e, HANDLE hPro, HANDLE hThr, DWORD dProId, DWO
 	printf("\n");
 	log("[Crashed!]\n");
 	log("-- Unhandled Exception in -> %ls\n", MapModuleFromAddr(hProcess, e->ExceptionRecord->ExceptionAddress).c_str());
-	log("-- Exception Code: %u\n", e->ExceptionRecord->ExceptionCode);
+	log("-- Exception Code: 0x%X\n", e->ExceptionRecord->ExceptionCode);
 	if(e->ExceptionRecord->ExceptionCode == CRT_EXCEPTION_CODE)
 		log("-- C++ STL Exception detected!\n")
 
 	CoreDump(e);
 	CloseHandle(hDumpFile);
 
+	log("\n");
 	TrackBack(e);
 	if (fLog != NULL && fLog != INVALID_HANDLE_VALUE)
 		fclose(fLog);
