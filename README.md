@@ -1,7 +1,7 @@
 # CrashLogger
 > A dll injected into process to dump stack when crashing.
 
-Support me at https://www.minebbs.com/resources/crashlogger.2287/
+Support me at [https://www.minebbs.com/resources/crashlogger-pro.2645/](https://www.minebbs.com/resources/crashlogger-pro.2645/)
 
 
 ### At Crash
