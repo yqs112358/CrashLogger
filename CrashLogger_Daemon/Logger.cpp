@@ -28,10 +28,9 @@ HANDLE hDumpFile;
 string GetDateTime()
 {
 	time_t t = time(NULL);
-	tm ts;
-	localtime_s(&ts, &t);
+	tm *ts = localtime(&t);
 	char buf[24] = { 0 };
-	strftime(buf, 24, "%Y%m%d_%H-%M-%S", &ts);
+	strftime(buf, 24, "%Y%m%d_%H-%M-%S", ts);
 	return string(buf);
 }
 
@@ -49,11 +48,10 @@ bool CreateLogFiles()
 	}
 
 	string trackPath = TRACKBACK_OUTPUT_PATH + dateTimeStr + ".log";
-	errno_t res = fopen_s(&fLog, trackPath.c_str(), "w");
-	if (res != 0)
+	fLog = fopen(trackPath.c_str(), "w");
+	if (fLog == NULL)
 	{
-		fLog = NULL;
-		log("[CrashLogger][ERROR] Fail to open Log file! Error Code: %d\n", res);
+		log("[CrashLogger][ERROR] Fail to open Log file! %s\n", strerror(errno));
 	}
 
 	return true;
@@ -138,5 +136,5 @@ void LogCrash(PEXCEPTION_POINTERS e, HANDLE hPro, HANDLE hThr, DWORD dProId, DWO
 	if (fLog != NULL && fLog != INVALID_HANDLE_VALUE)
 		fclose(fLog);
 
-	log("\n");
+	printf("\n");
 }
