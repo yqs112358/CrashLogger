@@ -21,11 +21,11 @@ int main(int argc,char **argv)
 	HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, stoul(argv[1]));
 	if (hProcess == NULL)
 	{
-		printf("[CrashLogger][ERROR] Fail to Open the process daemoned! Error Code: %d\n", GetLastError());
+		printf("[CrashLogger][ERROR] Fail to Open the process to be daemoned! Error Code: %d\n", GetLastError());
 		return -1;
 	}
 
-    printf("[CrashLogger] CrashLogger Daemon Process attached.\n");
+    //printf("[CrashLogger] CrashLogger Daemon Process attached.\n");
 	DebuggerMain(hProcess);
 	return 0;
 }

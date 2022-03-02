@@ -58,6 +58,7 @@ bool InitDebugger()
 		printf("[CrashLogger][ERROR] Fail to attach Debugger! Error Code: %d\n", GetLastError());
 		return false;
 	}
+	DebugSetProcessKillOnExit(false);
 	return true;
 }
 
@@ -125,7 +126,7 @@ void DebuggerMain(HANDLE hPro)
 
 	while (WaitForDebugEvent(&debugEvent, INFINITE))
 	{
-		DWORD continueStatus;
+		DWORD continueStatus = DBG_CONTINUE;
 		switch (debugEvent.dwDebugEventCode)
 		{
 		case CREATE_PROCESS_DEBUG_EVENT:
@@ -135,7 +136,8 @@ void DebuggerMain(HANDLE hPro)
 			continueStatus = OnThreadCreated(&debugEvent.u.CreateThread);
 			break;
 		case EXCEPTION_DEBUG_EVENT:
-			continueStatus = OnException(&debugEvent.u.Exception, debugEvent.dwProcessId, debugEvent.dwThreadId);
+			if (debugEvent.u.Exception.ExceptionRecord.ExceptionCode != EXCEPTION_BREAKPOINT)
+				continueStatus = OnException(&debugEvent.u.Exception, debugEvent.dwProcessId, debugEvent.dwThreadId);
 			break;
 		case EXIT_PROCESS_DEBUG_EVENT:
 			waitEvent = false;

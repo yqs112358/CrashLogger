@@ -19,7 +19,7 @@ HANDLE hDumpFile;
 #define log(format,...)                         \
     printf(format, __VA_ARGS__);                \
     fflush(stdout);                             \
-    if (fLog > 0)                               \
+    if (fLog != NULL)                           \
     {                                           \
         fprintf(fLog, format, __VA_ARGS__);     \
         fflush(fLog);                           \

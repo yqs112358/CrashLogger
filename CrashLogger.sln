@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30907.101
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32126.317
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrashLogger", "CrashLogger\CrashLogger.vcxproj", "{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}"
 EndProject
@@ -9,28 +9,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "CrashLogger_Daemon", "Crash
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug|x64 = Debug|x64
-		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
-		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}.Debug|x64.ActiveCfg = Debug|x64
-		{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}.Debug|x64.Build.0 = Debug|x64
-		{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}.Debug|x86.ActiveCfg = Debug|Win32
-		{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}.Debug|x86.Build.0 = Debug|Win32
 		{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}.Release|x64.ActiveCfg = Release|x64
 		{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}.Release|x64.Build.0 = Release|x64
-		{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}.Release|x86.ActiveCfg = Release|Win32
-		{B9492785-E9A2-42BA-A6C0-5AFE14FA3614}.Release|x86.Build.0 = Release|Win32
-		{336BD48D-37CD-41CC-BC61-F5090AF162BE}.Debug|x64.ActiveCfg = Debug|x64
-		{336BD48D-37CD-41CC-BC61-F5090AF162BE}.Debug|x64.Build.0 = Debug|x64
-		{336BD48D-37CD-41CC-BC61-F5090AF162BE}.Debug|x86.ActiveCfg = Debug|Win32
-		{336BD48D-37CD-41CC-BC61-F5090AF162BE}.Debug|x86.Build.0 = Debug|Win32
 		{336BD48D-37CD-41CC-BC61-F5090AF162BE}.Release|x64.ActiveCfg = Release|x64
 		{336BD48D-37CD-41CC-BC61-F5090AF162BE}.Release|x64.Build.0 = Release|x64
-		{336BD48D-37CD-41CC-BC61-F5090AF162BE}.Release|x86.ActiveCfg = Release|Win32
-		{336BD48D-37CD-41CC-BC61-F5090AF162BE}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
