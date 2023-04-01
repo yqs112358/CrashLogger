@@ -45,7 +45,7 @@ BOOL APIENTRY DllMain( HMODULE hModule,
         }
         if (!InitDaemonProcess())
             return FALSE;
-        printf("[CrashLogger] CrashLogger loaded.\n");
+        // printf("[CrashLogger] CrashLogger loaded.\n");
         break;
     case DLL_THREAD_ATTACH:
         break;

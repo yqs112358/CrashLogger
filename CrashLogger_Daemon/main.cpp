@@ -25,7 +25,7 @@ int main(int argc,char **argv)
 		return -1;
 	}
 
-    //printf("[CrashLogger] CrashLogger Daemon Process attached.\n");
+    // printf("[CrashLogger] CrashLogger Daemon Process attached.\n");
 	DebuggerMain(hProcess);
 	return 0;
 }

@@ -41,7 +41,7 @@ bool LoadSymbolFiles()
 {
 	wstring symbolPath{ L"srv*C:\\Windows\\symbols*http://msdl.microsoft.com/download/symbols" };
 	FindSymbols(symbolPath,".",false);
-	FindSymbols(symbolPath,".\\plugins", true);
+	FindSymbols(symbolPath,".\\pdb", true);
 
 	if (!SymInitializeW(hProcess_Debug, symbolPath.c_str(), TRUE))
 	{
