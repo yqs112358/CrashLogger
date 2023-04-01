@@ -104,10 +104,14 @@ void TrackBack(PEXCEPTION_POINTERS e)
 			line.SizeOfStruct = sizeof(IMAGEHLP_LINE64);
 
 			if (SymGetLineFromAddrW64(hProcess, address, &displacement, &line))
+			{
 				log("-- At File %ls : Line %d \n", line.FileName, line.LineNumber);
+			}
 		}
 		else
+		{
 			log("[TrackBack] Function ???????? at 0x????????\n");
+		}
 	}
 }
 
@@ -125,8 +129,10 @@ void LogCrash(PEXCEPTION_POINTERS e, HANDLE hPro, HANDLE hThr, DWORD dProId, DWO
 	log("[Crashed!]\n");
 	log("-- Unhandled Exception in -> %ls\n", MapModuleFromAddr(hProcess, e->ExceptionRecord->ExceptionAddress).c_str());
 	log("-- Exception Code: 0x%X\n", e->ExceptionRecord->ExceptionCode);
-	if(e->ExceptionRecord->ExceptionCode == CRT_EXCEPTION_CODE)
+	if (e->ExceptionRecord->ExceptionCode == CRT_EXCEPTION_CODE)
+	{
 		log("-- C++ STL Exception detected!\n")
+	}
 
 	CoreDump(e);
 	CloseHandle(hDumpFile);
